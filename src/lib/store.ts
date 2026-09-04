@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AppState, Customer, Settings, Txn, TxnDraft } from "../types";
+import type { AppState, Customer, Gateway, Settings, Txn, TxnDraft } from "../types";
 import { defaultState, todayISO, uid } from "./calc";
 import { buildDemoState } from "./seed";
 
@@ -73,6 +73,33 @@ export function useAppStore() {
     setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
   }, []);
 
+  const addGateway = useCallback((g: Omit<Gateway, "id">) => {
+    setState((s) => ({
+      ...s,
+      settings: { ...s.settings, gateways: [...(s.settings.gateways ?? []), { ...g, id: uid() }] },
+    }));
+  }, []);
+
+  const updateGateway = useCallback((id: string, patch: Partial<Gateway>) => {
+    setState((s) => ({
+      ...s,
+      settings: {
+        ...s.settings,
+        gateways: (s.settings.gateways ?? []).map((g) => (g.id === id ? { ...g, ...patch } : g)),
+      },
+    }));
+  }, []);
+
+  const deleteGateway = useCallback((id: string) => {
+    setState((s) => ({
+      ...s,
+      settings: {
+        ...s.settings,
+        gateways: (s.settings.gateways ?? []).filter((g) => g.id !== id),
+      },
+    }));
+  }, []);
+
   const importState = useCallback((next: AppState) => {
     setState({
       settings: { ...defaultState().settings, ...next.settings },
@@ -92,11 +119,27 @@ export function useAppStore() {
       deleteCustomer,
       addTxn,
       updateSettings,
+      addGateway,
+      updateGateway,
+      deleteGateway,
       importState,
       resetAll,
       loadDemo,
     }),
-    [state, addCustomer, updateCustomer, deleteCustomer, addTxn, updateSettings, importState, resetAll, loadDemo],
+    [
+      state,
+      addCustomer,
+      updateCustomer,
+      deleteCustomer,
+      addTxn,
+      updateSettings,
+      addGateway,
+      updateGateway,
+      deleteGateway,
+      importState,
+      resetAll,
+      loadDemo,
+    ],
   );
 
   return api;

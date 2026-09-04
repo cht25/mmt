@@ -1,4 +1,4 @@
-import type { AppState, Customer, Direction, Txn, TxnType } from "../types";
+import type { AppState, Customer, Direction, Gateway, Txn, TxnType } from "../types";
 
 export const uid = (): string =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -93,8 +93,54 @@ export function defaultState(): AppState {
       bengaliDigits: false,
       dark: false,
       themeColor: "#0c6b4e",
+      gateways: defaultGateways(),
     },
     customers: [],
     txns: [],
   };
+}
+
+export function defaultGateways(): Gateway[] {
+  return [
+    {
+      id: "gw-bkash",
+      name: "bKash",
+      type: "mobile",
+      accountNo: "017XX-XXXXXX",
+      holder: "Mahi And Muhi Traders",
+      instructions: "আদায়ের সময় রেফারেন্সে গ্রাহকের নাম দিন",
+      color: "#d12053",
+      enabled: true,
+    },
+    {
+      id: "gw-nagad",
+      name: "Nagad",
+      type: "mobile",
+      accountNo: "017XX-XXXXXX",
+      holder: "Mahi And Muhi Traders",
+      instructions: "",
+      color: "#f6921e",
+      enabled: true,
+    },
+    {
+      id: "gw-rocket",
+      name: "Rocket",
+      type: "mobile",
+      accountNo: "017XX-XXXXXXX",
+      holder: "Mahi And Muhi Traders",
+      instructions: "",
+      color: "#8c3494",
+      enabled: true,
+    },
+    {
+      id: "gw-bank",
+      name: "ব্যাংক একাউন্ট",
+      type: "bank",
+      accountNo: "XXXX-XXXX-XXXX",
+      holder: "Mahi And Muhi Traders",
+      instructions: "",
+      color: "#16a34a",
+      enabled: true,
+    },
+  ];
 }

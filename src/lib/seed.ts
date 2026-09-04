@@ -1,5 +1,5 @@
 import type { AppState, Customer, Txn, TxnType } from "../types";
-import { addDays, toISO, todayISO, uid } from "./calc";
+import { addDays, defaultGateways, todayISO, uid } from "./calc";
 
 interface SeedPerson {
   name: string;
@@ -138,6 +138,7 @@ export function buildDemoState(): AppState {
       bengaliDigits: false,
       dark: false,
       themeColor: "#0c6b4e",
+      gateways: defaultGateways(),
     },
     customers,
     txns,

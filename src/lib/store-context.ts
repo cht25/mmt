@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Customer, Settings, Txn, TxnDraft } from "../types";
+import type { Customer, Gateway, Settings, Txn, TxnDraft } from "../types";
 
 export interface StoreApi {
   state: import("../types").AppState;
@@ -8,6 +8,9 @@ export interface StoreApi {
   deleteCustomer: (id: string) => void;
   addTxn: (t: TxnDraft) => Txn;
   updateSettings: (patch: Partial<Settings>) => void;
+  addGateway: (g: Omit<Gateway, "id">) => void;
+  updateGateway: (id: string, patch: Partial<Gateway>) => void;
+  deleteGateway: (id: string) => void;
   importState: (state: import("../types").AppState) => void;
   resetAll: () => void;
   loadDemo: () => void;

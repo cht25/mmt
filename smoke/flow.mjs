@@ -47,8 +47,9 @@ const sleep = (ms = 60) => new Promise((r) => setTimeout(r, ms));
 function buttons() {
   return [...doc.querySelectorAll("button")];
 }
-function clickText(text) {
-  const el = buttons().find((b) => (b.textContent || "").includes(text));
+function clickText(text, last = false) {
+  const all = buttons().filter((b) => (b.textContent || "").includes(text));
+  const el = last ? all[all.length - 1] : all[0];
   if (!el) throw new Error(`button not found: ${text}`);
   el.click();
   return el;
@@ -118,6 +119,22 @@ check("ledger title", (doc.body.textContent || "").includes("টেস্ট গ
 // ---- Flow D: settings -> load demo data ----
 clickText("সেটিংস");
 await sleep();
+check("admin panel visible", await waitFor("অ্যাডমিন প্যানেল"));
+check("payment gateways visible", await waitFor("পেমেন্ট গেটওয়ে") && (doc.body.textContent || "").includes("bKash"));
+
+// ---- Flow D2: admin adds a new gateway ----
+clickText("গেটওয়ে যোগ করুন");
+await sleep(150);
+const gwName = doc.querySelector('input[placeholder*="bKash / Nagad"]');
+if (gwName) {
+  setInput(gwName, "সিটি ব্যাংক");
+  clickText("সেভ করুন", true); // last save button = gateway modal (profile save comes earlier in DOM)
+  await sleep(200);
+  check("gateway added", await waitFor("সিটি ব্যাংক"));
+} else {
+  check("gateway added", false);
+}
+
 clickText("ডেমো ডেটা লোড করুন");
 await sleep(180);
 clickText("ড্যাশবোর্ড");
@@ -143,3 +160,4 @@ if (failed > 0) {
   process.exit(1);
 }
 console.log("\nALL SMOKE CHECKS PASSED");
+process.exit(0);

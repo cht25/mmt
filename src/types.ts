@@ -22,6 +22,20 @@ export interface Settings {
   bengaliDigits: boolean;
   dark: boolean;
   themeColor: string;
+  gateways: Gateway[];
+}
+
+export type GatewayType = "mobile" | "bank" | "other";
+
+export interface Gateway {
+  id: string;
+  name: string;
+  type: GatewayType;
+  accountNo: string;
+  holder: string;
+  instructions: string;
+  color: string;
+  enabled: boolean;
 }
 
 export interface Customer {
