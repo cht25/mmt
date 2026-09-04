@@ -13,8 +13,9 @@ import { useStore } from "../lib/store-context";
 import { balanceOf, sortKeyDate } from "../lib/calc";
 import { fmtDate, money, moneySigned, t, toBengaliDigits } from "../lib/format";
 import { TXN_META } from "../lib/i18n";
+import type { Txn } from "../types";
 import { Badge, Button, Card, EmptyState } from "./ui";
-import { CustomerFormModal } from "./Modals";
+import { AddTxnModal, CustomerFormModal } from "./Modals";
 import { downloadCSV } from "../lib/csv";
 
 export default function CustomerLedger({
@@ -31,6 +32,8 @@ export default function CustomerLedger({
   const digits = state.settings.language === "bn" && state.settings.bengaliDigits;
   const [editOpen, setEditOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editingTxn, setEditingTxn] = useState<Txn | null>(null);
+  const [txnModalOpen, setTxnModalOpen] = useState(false);
 
   const customer = state.customers.find((c) => c.id === customerId);
   const txns = useMemo(
@@ -207,6 +210,7 @@ export default function CustomerLedger({
                     <th className="px-3 py-2.5 text-right font-semibold">{t(lang, "youWillGet")}</th>
                     <th className="px-3 py-2.5 text-right font-semibold">{t(lang, "youOwe")}</th>
                     <th className="px-5 py-2.5 text-right font-semibold">{t(lang, "balance")}</th>
+                    <th className="no-print px-3 py-2.5 text-right font-semibold">{t(lang, "actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -232,6 +236,18 @@ export default function CustomerLedger({
                       >
                         {moneySigned(running, state)}
                       </td>
+                      <td className="no-print whitespace-nowrap px-3 py-2.5 text-right">
+                        <button
+                          onClick={() => {
+                            setEditingTxn(x);
+                            setTxnModalOpen(true);
+                          }}
+                          className="grid h-7 w-7 place-items-center rounded-lg text-stone-400 transition hover:bg-stone-100 hover:text-[var(--brand)] dark:hover:bg-stone-800"
+                          aria-label={t(lang, "editTxn")}
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -253,6 +269,7 @@ export default function CustomerLedger({
                     >
                       {moneySigned(balance, state)}
                     </td>
+                    <td className="no-print" />
                   </tr>
                 </tfoot>
               </table>
@@ -277,6 +294,7 @@ export default function CustomerLedger({
       </div>
 
       <CustomerFormModal open={editOpen} onClose={() => setEditOpen(false)} editing={customer} />
+      <AddTxnModal open={txnModalOpen} onClose={() => setTxnModalOpen(false)} editing={editingTxn} presetCustomerId={customerId} />
       {confirmDelete && (
         <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]">
           <Card className="max-w-sm p-6">

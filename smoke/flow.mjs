@@ -54,6 +54,12 @@ function clickText(text, last = false) {
   el.click();
   return el;
 }
+function clickAria(label) {
+  const el = buttons().find((b) => (b.getAttribute("aria-label") || "").includes(label));
+  if (!el) throw new Error(`button not found (aria): ${label}`);
+  el.click();
+  return el;
+}
 function setInput(input, value) {
   const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
   setter.call(input, value);
@@ -115,6 +121,27 @@ clickText("খাতা দেখুন");
 await sleep();
 check("ledger shows entry", (doc.body.textContent || "").includes("1,200"));
 check("ledger title", (doc.body.textContent || "").includes("টেস্ট গ্রাহক"));
+
+// ---- Flow C2: admin edits the entry (1200 -> 1500) then deletes it ----
+clickAria("লেনদেন সম্পাদনা"); // pencil on ledger row
+await sleep(150);
+const editAmount = doc.querySelector('input[inputmode="decimal"]');
+setInput(editAmount, "1500");
+clickText("সেভ করুন", true);
+await sleep(200);
+check("entry edited to 1500", await waitFor("1,500"));
+check("old amount gone", !(doc.body.textContent || "").includes("1,200"));
+// delete the entry: reopen the edit modal, then delete from inside it
+clickAria("লেনদেন সম্পাদনা");
+await sleep(150);
+clickText("লেনদেন মুছুন");
+await sleep(120);
+const confirmBtns = buttons().filter((b) => (b.textContent || "").includes("মুছুন"));
+const delConfirm = confirmBtns[confirmBtns.length - 1]; // the "মুছুন" confirm button
+if (!delConfirm) throw new Error("delete confirm not found");
+delConfirm.click();
+await sleep(250);
+check("entry deleted", await waitFor("এখনও কোনো লেনদেন নেই"));
 
 // ---- Flow D: settings -> load demo data ----
 clickText("সেটিংস");

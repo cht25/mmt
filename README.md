@@ -18,7 +18,7 @@ Users use it **in the browser** (computer or phone) or **install it as a PWA** f
 - 📊 **Dashboard** — receivable/payable/net balance, today & month stats, 7-day chart, top dues, recent activity
 - 👥 **Customers & parties** — add/update/delete customers and suppliers, call + WhatsApp, search
 - 📒 **Per-party Tali Khata** — running balance, totals, CSV export, print-ready A4 statement
-- 💸 **Transactions** — credit sale, collection, purchase, payment — one tap
+- 💸 **Transactions** — credit sale, collection, purchase, payment — one tap; **edit or delete any entry** from the list or the customer's khata (admin)
 - 📈 **Reports** — period/monthly/customer summaries, due lists, CSV
 - 🛠 **Admin panel** (in Settings) — add/edit/delete **payment gateways** (bKash, Nagad, Rocket, bank…), toggle active/inactive, colors; plus shop profile, theme, backup, demo data. Gateways you configure show up on the landing page.
 - 🌐 Bilingual বাংলা/English, Bengali numerals, dark mode, color themes

@@ -7,6 +7,8 @@ export interface StoreApi {
   updateCustomer: (id: string, patch: Partial<Customer>) => void;
   deleteCustomer: (id: string) => void;
   addTxn: (t: TxnDraft) => Txn;
+  updateTxn: (id: string, patch: Partial<Txn>) => void;
+  deleteTxn: (id: string) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   addGateway: (g: Omit<Gateway, "id">) => void;
   updateGateway: (id: string, patch: Partial<Gateway>) => void;

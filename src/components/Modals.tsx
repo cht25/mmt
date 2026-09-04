@@ -4,7 +4,7 @@ import { useStore } from "../lib/store-context";
 import { t } from "../lib/format";
 import { TXN_META } from "../lib/i18n";
 import { todayISO, toNumber } from "../lib/calc";
-import type { Customer, PartyType, TxnType } from "../types";
+import type { Customer, PartyType, Txn, TxnType } from "../types";
 import { Button, Input, Modal, Select } from "./ui";
 
 /* ---------------------------------- Customer ---------------------------------- */
@@ -118,12 +118,16 @@ export function AddTxnModal({
   open,
   onClose,
   presetCustomerId,
+  editing,
+  onDeleted,
 }: {
   open: boolean;
   onClose: () => void;
   presetCustomerId?: string | null;
+  editing?: Txn | null;
+  onDeleted?: () => void;
 }) {
-  const { state, addTxn } = useStore();
+  const { state, addTxn, updateTxn, deleteTxn } = useStore();
   const lang = state.settings.language;
   const customers = state.customers;
 
@@ -133,18 +137,28 @@ export function AddTxnModal({
   const [date, setDate] = useState(todayISO());
   const [note, setNote] = useState("");
   const [error, setError] = useState<"" | "required" | "amount">("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setCustomerId(presetCustomerId ?? customers[0]?.id ?? "");
-      setType("sale");
-      setAmount("");
-      setDate(todayISO());
-      setNote("");
+      if (editing) {
+        setCustomerId(editing.customerId);
+        setType(editing.type);
+        setAmount(String(editing.amount));
+        setDate(editing.date);
+        setNote(editing.note ?? "");
+      } else {
+        setCustomerId(presetCustomerId ?? customers[0]?.id ?? "");
+        setType("sale");
+        setAmount("");
+        setDate(todayISO());
+        setNote("");
+      }
       setError("");
+      setConfirmDelete(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, presetCustomerId]);
+  }, [open, presetCustomerId, editing]);
 
   const save = () => {
     if (!customerId) {
@@ -156,7 +170,18 @@ export function AddTxnModal({
       setError("amount");
       return;
     }
-    addTxn({ customerId, type, amount: amt, date: date || todayISO(), note: note.trim() });
+    if (editing) {
+      updateTxn(editing.id, { customerId, type, amount: amt, date: date || todayISO(), note: note.trim() });
+    } else {
+      addTxn({ customerId, type, amount: amt, date: date || todayISO(), note: note.trim() });
+    }
+    onClose();
+  };
+
+  const remove = () => {
+    if (!editing) return;
+    deleteTxn(editing.id);
+    onDeleted?.();
     onClose();
   };
 
@@ -170,7 +195,11 @@ export function AddTxnModal({
   const typeDesc = typeOptions.find((o) => o.key === type)?.desc ?? "";
 
   return (
-    <Modal open={open} onClose={onClose} title={t(lang, "addTxn")}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={editing ? t(lang, "editTxn") : t(lang, "addTxn")}
+    >
       {customers.length === 0 ? (
         <div className="py-6 text-center text-sm text-stone-500">
           {t(lang, "noCustomersHint")}
@@ -234,13 +263,31 @@ export function AddTxnModal({
             </p>
           )}
 
-          <div className="flex justify-end gap-2 pt-1">
-            <Button variant="secondary" onClick={onClose}>
-              {t(lang, "cancel")}
-            </Button>
-            <Button onClick={save}>
-              <Check size={16} /> {t(lang, "save")}
-            </Button>
+          <div className="flex items-center justify-between gap-2 pt-1">
+            {editing ? (
+              confirmDelete ? (
+                <div className="flex items-center gap-2">
+                  <Button variant="danger" onClick={remove} className="text-xs">
+                    <Trash2 size={14} /> {t(lang, "delete")}
+                  </Button>
+                  <span className="text-xs text-stone-400">{t(lang, "confirmDeleteTxn")}</span>
+                </div>
+              ) : (
+                <Button variant="ghost" onClick={() => setConfirmDelete(true)} className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20">
+                  <Trash2 size={15} /> {t(lang, "deleteTxn")}
+                </Button>
+              )
+            ) : (
+              <span />
+            )}
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={onClose}>
+                {t(lang, "cancel")}
+              </Button>
+              <Button onClick={save}>
+                <Check size={16} /> {t(lang, "save")}
+              </Button>
+            </div>
           </div>
         </div>
       )}

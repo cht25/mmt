@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, Plus, Search } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useStore } from "../lib/store-context";
 import { computeBalances } from "../lib/calc";
 import { fmtDateShort, money, moneySigned, t } from "../lib/format";
 import { TXN_META } from "../lib/i18n";
 import type { Txn, TxnType } from "../types";
 import { Badge, Button, Card, EmptyState } from "./ui";
+import { AddTxnModal } from "./Modals";
 import { exportTransactionsCSV } from "../lib/csv";
 
 type Filter = "all" | TxnType;
@@ -18,6 +19,8 @@ export default function Transactions({ onAddTxn }: { onAddTxn: () => void }) {
   const [custF, setCustF] = useState<string>("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [editing, setEditing] = useState<Txn | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const balances = useMemo(() => computeBalances(state.txns), [state.txns]);
 
@@ -129,11 +132,20 @@ export default function Transactions({ onAddTxn }: { onAddTxn: () => void }) {
                   <th className="px-3 py-3 font-semibold">{t(lang, "typeLabel")}</th>
                   <th className="px-3 py-3 font-semibold">{t(lang, "note")}</th>
                   <th className="px-4 py-3 text-right font-semibold">{t(lang, "amount")}</th>
+                  <th className="px-3 py-3 text-right font-semibold">{t(lang, "actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((tx) => (
-                  <TransactionRow key={tx.id} tx={tx} balances={balances} />
+                  <TransactionRow
+                    key={tx.id}
+                    tx={tx}
+                    balances={balances}
+                    onEdit={() => {
+                      setEditing(tx);
+                      setEditOpen(true);
+                    }}
+                  />
                 ))}
               </tbody>
               <tfoot>
@@ -142,19 +154,31 @@ export default function Transactions({ onAddTxn }: { onAddTxn: () => void }) {
                     {t(lang, "settlement")}
                   </td>
                   <td className="num px-4 py-3 text-right">{moneySigned(totals.give - totals.take, state)}</td>
+                  <td />
                 </tr>
               </tfoot>
             </table>
           </div>
         </Card>
       )}
+
+      <AddTxnModal open={editOpen} onClose={() => setEditOpen(false)} editing={editing} />
     </div>
   );
 }
 
-function TransactionRow({ tx, balances }: { tx: Txn; balances: Record<string, number> }) {
-  const { state } = useStore();
+function TransactionRow({
+  tx,
+  balances,
+  onEdit,
+}: {
+  tx: Txn;
+  balances: Record<string, number>;
+  onEdit: () => void;
+}) {
+  const { state, deleteTxn } = useStore();
   const lang = state.settings.language;
+  const [confirmDel, setConfirmDel] = useState(false);
   const c = state.customers.find((x) => x.id === tx.customerId);
   const give = tx.type === "sale" || tx.type === "payment_out";
   const meta = TXN_META[tx.type];
@@ -180,6 +204,34 @@ function TransactionRow({ tx, balances }: { tx: Txn; balances: Record<string, nu
         <p className={`num text-[11px] ${bal > 0 ? "text-rose-500" : bal < 0 ? "text-amber-500" : "text-emerald-500"}`}>
           {moneySigned(bal, state)}
         </p>
+      </td>
+      <td className="whitespace-nowrap px-3 py-2.5 text-right">
+        <div className="inline-flex items-center gap-1">
+          <button
+            onClick={onEdit}
+            className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 transition hover:bg-stone-100 hover:text-[var(--brand)] dark:hover:bg-stone-800"
+            aria-label={t(lang, "editTxn")}
+          >
+            <Pencil size={14} />
+          </button>
+          {confirmDel ? (
+            <button
+              onClick={() => deleteTxn(tx.id)}
+              onMouseLeave={() => setConfirmDel(false)}
+              className="grid h-8 place-items-center rounded-lg bg-rose-600 px-2 text-[11px] font-bold text-white"
+            >
+              {t(lang, "delete")}?
+            </button>
+          ) : (
+            <button
+              onClick={() => setConfirmDel(true)}
+              className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20"
+              aria-label={t(lang, "deleteTxn")}
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );

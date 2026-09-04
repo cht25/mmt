@@ -69,6 +69,17 @@ export function useAppStore() {
     return txn;
   }, []);
 
+  const updateTxn = useCallback((id: string, patch: Partial<Txn>) => {
+    setState((s) => ({
+      ...s,
+      txns: s.txns.map((t) => (t.id === id ? { ...t, ...patch, amount: patch.amount !== undefined ? Math.round(patch.amount * 100) / 100 : t.amount } : t)),
+    }));
+  }, []);
+
+  const deleteTxn = useCallback((id: string) => {
+    setState((s) => ({ ...s, txns: s.txns.filter((t) => t.id !== id) }));
+  }, []);
+
   const updateSettings = useCallback((patch: Partial<Settings>) => {
     setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
   }, []);
@@ -118,6 +129,8 @@ export function useAppStore() {
       updateCustomer,
       deleteCustomer,
       addTxn,
+      updateTxn,
+      deleteTxn,
       updateSettings,
       addGateway,
       updateGateway,
@@ -132,6 +145,8 @@ export function useAppStore() {
       updateCustomer,
       deleteCustomer,
       addTxn,
+      updateTxn,
+      deleteTxn,
       updateSettings,
       addGateway,
       updateGateway,
