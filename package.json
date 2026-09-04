@@ -1,0 +1,28 @@
+{
+  "name": "mahi-muhi-traders-talikhata",
+  "private": true,
+  "version": "1.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "smoke": "esbuild smoke/entry.tsx --bundle --format=esm --platform=browser --jsx=automatic --loader:.tsx=tsx --outfile=/tmp/mmt-app.mjs --define:process.env.NODE_ENV='\"production\"' && esbuild smoke/landing-entry.tsx --bundle --format=esm --platform=browser --jsx=automatic --loader:.tsx=tsx --outfile=/tmp/mmt-landing.mjs --define:process.env.NODE_ENV='\"production\"' && node smoke/landing.mjs /tmp/mmt-landing.mjs '{\"manifest\":\"public/manifest.webmanifest\",\"sw\":\"public/sw.js\",\"appHtml\":\"app.html\"}' && node smoke/flow.mjs /tmp/mmt-app.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.462.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^26.4.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^30.0.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
+  }
+}
